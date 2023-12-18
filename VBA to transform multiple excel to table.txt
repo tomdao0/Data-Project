@@ -1,0 +1,87 @@
+Sub ProcessMultipleFiles()
+    Dim filePath As String
+    Dim wb As Workbook
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    Dim lastCol As Long
+    Dim dataRange As Range
+    Dim fs As Object
+    Dim folder As Object
+    Dim subfolder As Object
+
+    ' Modify this path to the folder containing your files
+    Dim folderPath As String
+    folderPath = "C:\test\"
+
+    ' Loop through all files in the specified folder
+    filePath = Dir(folderPath & "*.xlsx") ' Change the file extension if needed
+
+    Do While filePath <> ""
+    MsgBox folderPath & filePath
+        ' Open the workbook
+        Set wb = Workbooks.Open(folderPath & filePath)
+
+        ' Process each worksheet in the workbook
+        For Each ws In wb.Sheets
+            ' Find the last row and column with data
+            lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+            lastCol = ws.Cells(1, ws.Columns.Count).End(xlToLeft).Column
+
+            ' Create a dynamic range based on the last row and column with data
+            Set dataRange = ws.Range(ws.Cells(1, 1), ws.Cells(lastRow, lastCol))
+
+            ' Run your existing code using the dynamic range
+            Application.CutCopyMode = False
+            ws.ListObjects.Add(xlSrcRange, dataRange, , xlYes).Name = "Table2"
+            dataRange.Select
+        Next ws
+
+        ' Save and close the workbook
+        wb.Close SaveChanges:=True
+
+        ' Get the next file
+        filePath = Dir
+    
+    Loop
+Set fs = CreateObject("Scripting.FileSystemObject")
+    If fs.FolderExists(folderPath) Then
+        Set folder = fs.GetFolder(folderPath)
+
+        For Each subfolder In folder.SubFolders
+            folderPath2 = subfolder.Path & "\"
+            filePath = Dir(folderPath2 & "*.xlsx") ' Change the file extension if needed
+        
+            Do While filePath <> ""
+                ' Open the workbook
+                Set wb = Workbooks.Open(folderPath2 & filePath)
+        
+                ' Process each worksheet in the workbook
+                For Each ws In wb.Sheets
+                    ' Find the last row and column with data
+                    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+                    lastCol = ws.Cells(1, ws.Columns.Count).End(xlToLeft).Column
+        
+                    ' Create a dynamic range based on the last row and column with data
+                    Set dataRange = ws.Range(ws.Cells(1, 1), ws.Cells(lastRow, lastCol))
+        
+                    ' Run your existing code using the dynamic range
+                    Application.CutCopyMode = False
+                    ws.ListObjects.Add(xlSrcRange, dataRange, , xlYes).Name = "Table2"
+                    dataRange.Select
+                Next ws
+        
+                ' Save and close the workbook
+                wb.Close SaveChanges:=True
+        
+                ' Get the next file
+                filePath = Dir
+            Loop
+
+
+        Next subfolder
+    Else
+
+    End If
+End Sub
+
+
